@@ -255,4 +255,44 @@ describe('denormalize', () => {
 
     expect(denormalize(normalizedData.result, [patronsSchema], normalizedData.entities)).toMatchSnapshot();
   });
+
+  test('denormalizes with search key', () => {
+    const entities = {
+      patrons: {
+        '1': {
+          id: '1',
+          name: 'Esther',
+          guestId: '90'
+        },
+        '2': {
+          id: '2',
+          name: 'Tom',
+          guestId: '100'
+        }
+      },
+      guests: {
+        '100': {
+          id: '100',
+          name: 'Bob'
+        }
+      }
+    };
+
+    const guestSchema = new schema.Entity('guests');
+    const patronsSchema = new schema.Entity(
+      'patrons',
+      {
+        guest: guestSchema
+      },
+      {
+        searchKey: 'guestId'
+      }
+    );
+
+    const data = denormalize([1, 2], [patronsSchema], entities);
+    expect(data).toEqual([
+      { id: '1', name: 'Esther', guestId: '90' },
+      { id: '2', name: 'Tom', guestId: '100', guest: { id: '100', name: 'Bob' } }
+    ]);
+  });
 });

@@ -11,6 +11,7 @@ export default class EntitySchema {
 
     const {
       idAttribute = 'id',
+      searchKey = null,
       mergeStrategy = (entityA, entityB) => {
         return { ...entityA, ...entityB };
       },
@@ -18,6 +19,7 @@ export default class EntitySchema {
     } = options;
 
     this._key = key;
+    this._searchKey = searchKey;
     this._getId = typeof idAttribute === 'function' ? idAttribute : getDefaultGetId(idAttribute);
     this._idAttribute = idAttribute;
     this._mergeStrategy = mergeStrategy;
@@ -27,6 +29,10 @@ export default class EntitySchema {
 
   get key() {
     return this._key;
+  }
+
+  get searchKey() {
+    return this._searchKey;
   }
 
   get idAttribute() {
@@ -67,9 +73,10 @@ export default class EntitySchema {
     }
 
     Object.keys(this.schema).forEach((key) => {
-      if (entity.hasOwnProperty(key)) {
+      const searchKey = this.searchKey || key;
+      if (entity.hasOwnProperty(searchKey)) {
         const schema = this.schema[key];
-        entity[key] = unvisit(entity[key], schema);
+        entity[key] = unvisit(entity[searchKey], schema);
       }
     });
     return entity;
