@@ -285,7 +285,7 @@ describe('denormalize', () => {
         guest: guestSchema
       },
       {
-        searchKey: 'guestId'
+        searchKeySuffix: 'Id'
       }
     );
 
