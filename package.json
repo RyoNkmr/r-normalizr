@@ -86,5 +86,8 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "jest": {
+    "testURL": "http://localhost/"
   }
 }

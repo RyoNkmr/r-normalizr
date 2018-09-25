@@ -295,4 +295,70 @@ describe('denormalize', () => {
       { id: '2', name: 'Tom', guestId: '100', guest: { id: '100', name: 'Bob' } }
     ]);
   });
+
+  test('denormalizes recursively with search key', () => {
+    const entities = {
+      patrons: {
+        '1': {
+          id: '1',
+          name: 'Esther',
+          additionalInfo: {
+            nested: {
+              guestId: '90'
+            }
+          }
+        },
+        '2': {
+          id: '2',
+          name: 'Tom',
+          additionalInfo: {
+            nested: {
+              guestId: '200'
+            }
+          }
+        },
+        '3': {
+          id: '3',
+          name: 'Jack',
+          additionalInfo: {
+            nested: {
+              guestId: '300'
+            }
+          }
+        }
+      },
+      guests: {
+        '200': {
+          id: '200',
+          name: 'Bob'
+        },
+        '300': {
+          id: '300',
+          name: 'Sam'
+        }
+      }
+    };
+
+    const guestSchema = new schema.Entity('guests');
+    const patronsSchema = new schema.Entity(
+      'patrons',
+      {
+        additionalInfo: {
+          nested: {
+            guest: guestSchema
+          }
+        }
+      },
+      {
+        searchKeySuffix: 'Id'
+      }
+    );
+
+    const data = denormalize([1, 2, 3], [patronsSchema], entities);
+    expect(data).toEqual([
+      { id: '1', name: 'Esther', additionalInfo: { nested: { guestId: '90' } } },
+      { id: '2', name: 'Tom', additionalInfo: { nested: { guestId: '200', guest: { id: '200', name: 'Bob' } } } },
+      { id: '3', name: 'Jack', additionalInfo: { nested: { guestId: '300', guest: { id: '300', name: 'Sam' } } } }
+    ]);
+  });
 });
