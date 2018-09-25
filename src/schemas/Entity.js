@@ -4,23 +4,23 @@ const getDefaultGetId = (idAttribute) => (input) =>
   ImmutableUtils.isImmutable(input) ? input.get(idAttribute) : input[idAttribute];
 
 const denormalize = (schema, entity, unvisit, searchKeySuffix = '') => {
-  Object.keys(schema).forEach((key) => {
+  return Object.keys(schema).reduce((result, key) => {
     if (
       !!schema[key] &&
       typeof schema[key] === 'object' &&
       !Array.isArray(schema[key]) &&
       !(schema[key] instanceof EntitySchema)
     ) {
-      entity[key] = denormalize(schema[key], entity[key], unvisit, searchKeySuffix);
+      result[key] = denormalize(schema[key], { ...result[key] }, unvisit, searchKeySuffix);
     }
 
     const searchKey = `${key}${searchKeySuffix}`;
-    if (entity.hasOwnProperty(searchKey)) {
-      entity[key] = unvisit(entity[searchKey], schema[key]);
+    if (result.hasOwnProperty(searchKey)) {
+      result[key] = unvisit(result[searchKey], schema[key]);
     }
-    return entity;
-  });
-  return entity;
+
+    return result;
+  }, entity);
 };
 
 export default class EntitySchema {
